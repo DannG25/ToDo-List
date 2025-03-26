@@ -1,0 +1,5 @@
+Django>=4.2,<5.0
+psycopg2-binary>=2.9.6  # Para compatibilidad con PostgreSQL (aunque uses SQLite)
+django-widget-tweaks==1.4.12  # Para los widget personalizados que usas
+django-crispy-forms==2.0  # Si usas formularios con estilos
+python-dotenv>=0.21.0  # Para manejar variables de entorno

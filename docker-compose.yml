@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  mailhog:
+    image: mailhog/mailhog
+    ports:
+      - "1025:1025"  # Puerto SMTP
+      - "8025:8025"  # Interfaz web
+
+  web:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/code
+      - /code/db.sqlite3  # Para persistencia de SQLite
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mailhog
+    environment:
+      - EMAIL_HOST=mailhog
+      - EMAIL_PORT=1025

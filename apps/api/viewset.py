@@ -109,10 +109,11 @@ class EmailConfigViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=['post'])
     def send_email(self, request):
+        
         """
         Envía un correo electrónico utilizando MailHog.
         """
-        recipient = request.data.get('recipient', 'default@example.com')
+        recipient = request.data.get('recipient', 'noreply@example.com')
         message = request.data.get(
             'message', 'Este es un correo predeterminado.')
         try:
