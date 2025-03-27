@@ -1,5 +1,8 @@
 # 1. Importaciones estándar de Python
 from smtplib import SMTPException
+import mimetypes
+import os
+
 
 # 2. Importaciones de terceros (Django y otras librerías externas)
 from django.shortcuts import render, get_object_or_404, redirect
@@ -11,7 +14,7 @@ from django.core.mail import send_mail
 from django.http import JsonResponse
 from django.conf import settings
 from django.core.paginator import Paginator
-
+from django.http import FileResponse, Http404
 
 # 3. Importaciones locales (tu aplicación)
 from .models import Task
@@ -65,6 +68,9 @@ def task_create(request):
             task.save()
             messages.success(request, 'Tarea creada exitosamente.')
             return redirect('task_list')
+        else:
+            messages.error(
+                request, 'Error al crear la tarea. Verifica los datos.')
     else:
         form = TaskForm()
     return render(request, 'tasks/task_form.html', {'form': form})
@@ -82,6 +88,8 @@ def task_update(request, pk):
             form.save()
             messages.success(request, 'Tarea actualizada exitosamente.')
             return redirect('task_list')
+        else:
+            messages.error(request, 'Error al actualizar la tarea.')
     else:
         form = TaskForm(instance=task)
     return render(request, 'tasks/task_update.html', {'form': form})
@@ -108,16 +116,66 @@ def check_resolve(request, pk):
     """
     task = get_object_or_404(Task, pk=pk, user=request.user)
     if task.resuelto:
-        return JsonResponse({'status': 'error', 'message': 'La tarea ya está resuelta'}, status=400)
+        messages.error(request, 'La tarea ya está resuelta')
+        return JsonResponse({
+            'status': 'error',
+            'message': 'La tarea ya está resuelta',
+            'alert': {
+                'icon': 'error',
+                'title': 'La tarea ya está resuelta'
+            }
+        }, status=400)
 
     task.resuelto = True
     task.save()
+    messages.success(request, 'Tarea marcada como resuelta')
 
     return JsonResponse({
         'status': 'success',
         'message': 'Tarea marcada como resuelta',
         'task_id': task.id,
+        'alert': {
+            'icon': 'success',
+            'title': 'Tarea marcada como resuelta'
+        }
     })
+
+
+@login_required
+def task_file_download(request, pk):
+    """
+    Descarga o visualiza un archivo adjunto a una tarea.
+    """
+    task = get_object_or_404(Task, pk=pk, user=request.user)
+
+    if not task.archivo:  # Verifica si hay un archivo adjunto
+        raise Http404("Esta tarea no tiene archivo adjunto")
+
+    file_path = task.archivo.path
+    if not os.path.exists(file_path):
+        raise Http404("El archivo no existe")
+
+    # Determina el tipo MIME del archivo
+    content_type, _ = mimetypes.guess_type(file_path)
+
+    # Si no se puede determinar el tipo MIME, usa un valor por defecto
+    if content_type is None:
+        content_type = 'application/octet-stream'
+
+    # Para visualización en el navegador (si es compatible)
+    if request.GET.get('preview'):
+        return FileResponse(
+            open(file_path, 'rb'),
+            content_type=content_type
+        )
+
+    # Para descarga
+    return FileResponse(
+        open(file_path, 'rb'),
+        as_attachment=True,
+        filename=os.path.basename(file_path),
+        content_type=content_type
+    )
 
 
 def configure_email(request):

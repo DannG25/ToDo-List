@@ -1,320 +1,358 @@
-{% load static %}
+{% load static %} {% load custom_filters %}
 <!DOCTYPE html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Lista de Tareas</title>
     <!-- Estilos CSS -->
-    <link rel="stylesheet" href="{% static 'css/sb-admin-2.min.css' %}">
-    <link rel="stylesheet" href="{% static 'vendor/fontawesome-free/css/all.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/sb-admin-2.min.css' %}" />
+    <link
+      rel="stylesheet"
+      href="{% static 'vendor/fontawesome-free/css/all.min.css' %}"
+    />
     <!-- Estilos personalizados para prioridades -->
-    <style>
-        /* Estilos para las prioridades */
-        .priority-sin_prioridad { background-color: #f7f7f7; color: #6c6e6e; }
-        .priority-muy_baja { background-color: #6cbee4; color: #f7f7f7; }
-        .priority-baja { background-color: #54e9a3; color: #f7f7f7;; }
-        .priority-alta { background-color: #e7a746; color: #6c6e6e; }
-        .priority-muy_alta { background-color: #ebe866; color: #6c6e6e; }
-        .priority-urgente { background-color: #f85d6d; color: #f7f7f7; }
-        .task-item {
-            margin-bottom: 8px;
-            border-radius: 10px;
-        }
-
-        /* Estilos para el botón perfil */
-        .btn-profile-circle {
-            width: 50px;
-            height: 50px;
-            padding: 0;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* Estilos para los botones de acciones */
-        .task-actions {
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            gap: 8px; 
-        }
-
-        /* Estilos para el modal eliminar */
-        .modal-content {
-            background-color: #e1e3e7;
-        }
-    </style>
-</head>
-<body>
+    <link rel="stylesheet" href="{% static 'css/task_list.css' %}" />
+  </head>
+  <body>
     <div class="container">
-        <!-- Tarjeta principal -->
-        <div class="card shadow mb-4">
-            <!-- Encabezado de la tarjeta -->
-            <div class="card-header py-3 d-flex justify-content-between align-items-center">
-                <h2 class="m-0 font-weight-bold text-primary">Bienvenido {{ request.user.username }} a To DO List</h2>
-                <!-- Botón de perfil circular con menú desplegable -->
-                <div class="dropdown">
-                    <button class="btn btn-primary btn-profile-circle dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        <i class="fas fa-user"></i>
+      <!-- Tarjeta principal -->
+      <div class="card shadow mb-4">
+        <!-- Encabezado de la tarjeta -->
+        <div
+          class="card-header py-3 d-flex justify-content-between align-items-center"
+        >
+          <h2 class="m-0 font-weight-bold text-primary">
+            Bienvenido {{ request.user.username }} a To DO List
+          </h2>
+          <!-- Botón de perfil circular con menú desplegable -->
+          <div class="dropdown">
+            <button
+              class="btn btn-primary btn-profile-circle dropdown-toggle"
+              type="button"
+              id="dropdownMenuButton"
+              data-toggle="dropdown"
+              aria-haspopup="true"
+              aria-expanded="false"
+            >
+              <i class="fas fa-user"></i>
+            </button>
+            <div
+              class="dropdown-menu dropdown-menu-right"
+              aria-labelledby="dropdownMenuButton"
+            >
+              <a class="dropdown-item" href="{% url 'logout' %}">
+                <i class="fas fa-sign-out-alt"></i> Cerrar sesión
+              </a>
+            </div>
+          </div>
+        </div>
+        <!-- Cuerpo de la tarjeta -->
+        <div class="card-body">
+          <!-- Botones de acción -->
+          <div class="d-flex justify-content-between mb-3">
+            <a href="{% url 'task_create' %}" class="btn btn-primary">
+              <i class="fas fa-plus"></i> Nueva tarea
+            </a>
+          </div>
+
+          <!-- Tareas Pendientes -->
+          <h3>Tareas Pendientes</h3>
+          <ul class="list-group">
+            {% for task in tareas_pendientes %}
+            <li
+              class="list-group-item priority-{{ task.priority }} task-item"
+              data-task-id="{{ task.id }}"
+            >
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <strong>{{ task.title }}</strong>
+                  <p>{{ task.nota }}</p>
+                  <p>Fecha de asignación: {{ task.fecha_asignacion }}</p>
+                  <p>Fecha de vencimiento: {{ task.fecha_vencimiento }}</p>
+                  <p>
+                    <strong>Prioridad:</strong>
+                    <strong>{{ task.get_priority_display }}</strong>
+                  </p>
+                  {% if task.archivo %}
+                  <p>
+                    Archivo:
+                    <a
+                      href="{% url 'task_file_download' task.pk %}?preview=1"
+                      class="btn btn-info btn-sm mr-2"
+                      target="_blank"
+                    >
+                      <i class="fas fa-external-link-alt"></i> Abrir
+                    </a>
+                    <a
+                      href="{% url 'task_file_download' task.pk %}"
+                      class="btn btn-info btn-sm"
+                    >
+                      <i class="fas fa-download"></i> Descargar
+                    </a>
+                  </p>
+                  {% endif %}
+                </div>
+                <!-- Botones de acciones (solo íconos) -->
+                <div class="task-actions">
+                  <a
+                    href="{% url 'task_update' task.pk %}"
+                    class="btn btn-primary btn-sm"
+                  >
+                    <i class="fas fa-edit"></i>
+                  </a>
+                  <button
+                    type="button"
+                    class="btn btn-danger btn-sm"
+                    data-toggle="modal"
+                    data-target="#deleteTaskModal{{ task.id }}"
+                  >
+                    <i class="fas fa-trash"></i>
+                  </button>
+                  <form
+                    method="post"
+                    action="{% url 'check_resolve' task.pk %}"
+                    class="d-inline"
+                  >
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success btn-sm">
+                      <i class="fas fa-check"></i>
                     </button>
-                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton">
-                        <a class="dropdown-item" href="{% url 'logout' %}">
-                            <i class="fas fa-sign-out-alt"></i> Cerrar sesión
-                        </a>
+                  </form>
+                </div>
+              </div>
+
+              <!-- Modal de eliminación para cada tarea -->
+              <div
+                class="modal fade"
+                id="deleteTaskModal{{ task.id }}"
+                tabindex="-1"
+                role="dialog"
+                aria-labelledby="deleteTaskModalLabel{{ task.id }}"
+                aria-hidden="true"
+              >
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5
+                        class="modal-title text-danger"
+                        id="deleteTaskModalLabel{{ task.id }}"
+                      >¿Estás seguro de que deseas eliminar la tarea <strong>{{ task.title }}</strong>?
+                      </h5>
+                      <button
+                        type="button"
+                        class="close"
+                        data-dismiss="modal"
+                        aria-label="Cerrar"
+                      >
+                        <span aria-hidden="true">&times;</span>
+                      </button>
+                    </div>
+                    <div class="card-body text-center">
+                      <p class="mb-4"><strong>{{ task.nota }}</strong></p>
+                      <form
+                        method="post"
+                        action="{% url 'task_delete' task.pk %}"
+                        class="d-inline"
+                      >
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">
+                          <i class="fas fa-trash"></i> Eliminar
+                        </button>
+                      </form>
+                      <button
+                        type="button"
+                        class="btn btn-secondary"
+                        data-dismiss="modal"
+                      >
+                        <i class="fas fa-times"></i> Cancelar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </li>
+            {% endfor %}
+          </ul>
+          <!-- Paginación para tareas pendientes -->
+          <nav>
+            <ul class="pagination justify-content-center mt-3">
+              {% if tareas_pendientes.has_previous %}
+              <li class="page-item">
+                <a class="page-link" href="?pendientes_page=1{% if tareas_resueltas.number > 1 %}&resueltas_page={{ tareas_resueltas.number }}{% endif %}">Primero</a>
+              </li>
+              <li class="page-item">
+                <a class="page-link" href="?pendientes_page={{ tareas_pendientes.previous_page_number }}{% if tareas_resueltas.number > 1 %}&resueltas_page={{ tareas_resueltas.number }}{% endif %}">Anterior</a>
+              </li>
+              {% endif %}
+          
+              {% for num in tareas_pendientes.paginator.page_range %}
+                {% if num <= tareas_pendientes.number|add:2 and num >= tareas_pendientes.number|add:-2 %}
+                <li class="page-item {% if tareas_pendientes.number == num %}active{% endif %}">
+                  <a class="page-link" href="?pendientes_page={{ num }}{% if tareas_resueltas.number > 1 %}&resueltas_page={{ tareas_resueltas.number }}{% endif %}">{{ num }}</a>
+                </li>
+                {% endif %}
+              {% endfor %}
+          
+              {% if tareas_pendientes.has_next %}
+              <li class="page-item">
+                <a class="page-link" href="?pendientes_page={{ tareas_pendientes.next_page_number }}{% if tareas_resueltas.number > 1 %}&resueltas_page={{ tareas_resueltas.number }}{% endif %}">Siguiente</a>
+              </li>
+              <li class="page-item">
+                <a class="page-link" href="?pendientes_page={{ tareas_pendientes.paginator.num_pages }}{% if tareas_resueltas.number > 1 %}&resueltas_page={{ tareas_resueltas.number }}{% endif %}">Último</a>
+              </li>
+              {% endif %}
+            </ul>
+          </nav>
+
+         <!-- Sección de Tareas Resueltas -->
+<div class="resolved-tasks-section mt-5">
+    <h3 class="section-title">Tareas Resueltas</h3>
+    
+    <ul class="list-group resolved-tasks-list">
+        {% for task in tareas_resueltas %}
+        <li class="list-group-item priority-{{ task.priority }} task-item" data-task-id="{{ task.id }}">
+            
+            <!-- Contenido principal de la tarea -->
+            <div class="task-content d-flex justify-content-between align-items-center">
+                
+                <!-- Detalles de la tarea -->
+                <div class="task-details">
+                    <h4 class="task-title">{{ task.title }}</h4>
+                    <p class="task-notes">{{ task.nota }}</p>
+                    
+                    <div class="task-dates">
+                        <p><strong>Asignación:</strong> {{ task.fecha_asignacion }}</p>
+                        <p><strong>Vencimiento:</strong> {{ task.fecha_vencimiento }}</p>
+                    </div>
+                    
+                    <p class="task-priority">
+                        <strong>Prioridad:</strong> {{ task.get_priority_display }}
+                    </p>
+                    
+                    <!-- Sección de archivos adjuntos -->
+                    {% if task.archivo %}
+                    <div class="file-section mt-2">
+                        <p class="file-label">Archivo:</p>
+                        <div class="file-actions">
+                            {% if task.archivo_exists %}
+                            <a href="{{ task.archivo.url }}" target="_blank" 
+                               class="btn btn-info btn-sm mr-2 file-action-btn" 
+                               onclick="return checkFileAccess('{{ task.archivo.url }}', 'open')">
+                                <i class="fas fa-external-link-alt"></i> Abrir
+                            </a>
+                            <a href="{{ task.archivo.url }}" 
+                               download="{{ task.archivo.name|basename }}" 
+                               class="btn btn-info btn-sm file-action-btn"
+                               onclick="return checkFileAccess('{{ task.archivo.url }}', 'download')">
+                                <i class="fas fa-download"></i> Descargar
+                            </a>
+                            {% else %}
+                            <span class="text-danger file-unavailable">Archivo no disponible</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Acciones de la tarea -->
+                <div class="task-actions">
+                    <a href="{% url 'task_update' task.pk %}" class="btn btn-primary btn-sm action-btn" 
+                       title="Editar tarea">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                    <button type="button" class="btn btn-danger btn-sm action-btn" 
+                            data-toggle="modal" data-target="#deleteTaskModal{{ task.id }}"
+                            title="Eliminar tarea">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Modal de confirmación para eliminar tarea -->
+            <div class="modal fade" id="deleteTaskModal{{ task.id }}" tabindex="-1" role="dialog" 
+                 aria-labelledby="deleteTaskModalLabel{{ task.id }}" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title text-danger" id="deleteTaskModalLabel{{ task.id }}">
+                                ¿Estás seguro de que deseas eliminar la tarea <strong>"{{ task.title }}"</strong>?
+                            </h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        
+                        <div class="modal-body">
+                            <p class="task-notes"><em>{{ task.nota }}</em></p>
+                            
+                            <div class="confirmation-buttons text-center mt-4">
+                                <form method="post" action="{% url 'task_delete' task.pk %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-danger confirm-btn">
+                                        <i class="fas fa-trash"></i> Eliminar
+                                    </button>
+                                </form>
+                                <button type="button" class="btn btn-secondary cancel-btn" data-dismiss="modal">
+                                    <i class="fas fa-times"></i> Cancelar
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-            <!-- Cuerpo de la tarjeta -->
-            <div class="card-body">
-                <!-- Botones de acción -->
-                <div class="d-flex justify-content-between mb-3">
-                    <a href="{% url 'task_create' %}" class="btn btn-primary">
-                        <i class="fas fa-plus"></i> Nueva tarea
-                    </a>
-                </div>
-
-                <!-- Tareas Pendientes -->
-                <h3>Tareas Pendientes</h3>
-                <ul class="list-group">
-                    {% for task in tareas_pendientes %}
-                    <li class="list-group-item priority-{{ task.priority }} task-item" data-task-id="{{ task.id }}">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <strong>{{ task.title }}</strong>
-                                <p>{{ task.nota }}</p>
-                                <p>Fecha de asignación: {{ task.fecha_asignacion }}</p> 
-                                <p>Fecha de vencimiento: {{ task.fecha_vencimiento }}</p>
-                                <p><strong>Prioridad:</strong> <strong>{{ task.get_priority_display }}</strong></p>
-                                {% if task.archivo %}
-                                <p>Archivo: 
-                                    <a href="{{ task.archivo.url }}" target="_blank" class="btn btn-info btn-sm mr-2">
-                                        <i class="fas fa-external-link-alt"></i> Abrir
-                                    </a>
-                                    <a href="{{ task.archivo.url }}" download class="btn btn-info btn-sm">
-                                        <i class="fas fa-download"></i> Descargar
-                                    </a>
-                                </p>
-                                {% endif %}
-                            </div>
-                            <!-- Botones de acciones (solo íconos) -->
-                            <div class="task-actions">
-                                <a href="{% url 'task_update' task.pk %}" class="btn btn-primary btn-sm">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-                                <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteTaskModal{{ task.id }}">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                                <form method="post" action="{% url 'check_resolve' task.pk %}" class="d-inline">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn btn-success btn-sm">
-                                        <i class="fas fa-check"></i>
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-
-                        <!-- Modal de eliminación para cada tarea -->
-                        <div class="modal fade" id="deleteTaskModal{{ task.id }}" tabindex="-1" role="dialog" aria-labelledby="deleteTaskModalLabel{{ task.id }}" aria-hidden="true">
-                            <div class="modal-dialog modal-dialog-centered" role="document">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title text-danger" id="deleteTaskModalLabel{{ task.id }}">¿Estás seguro de que deseas eliminar la tarea {{ task.title }}?</h5>
-                                        <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
-                                            <span aria-hidden="true">&times;</span>
-                                        </button>
-                                    </div>
-                                    <div class="card-body text-center">
-                                        <p class="mb-4"><strong>{{ task.nota }}</strong></p>
-                                        <form method="post" action="{% url 'task_delete' task.pk %}" class="d-inline">
-                                            {% csrf_token %}
-                                            <button type="submit" class="btn btn-danger">
-                                                <i class="fas fa-trash"></i> Eliminar
-                                            </button>
-                                        </form>
-                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">
-                                            <i class="fas fa-times"></i> Cancelar
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </li>
-                    {% endfor %}
-                </ul>
-                <!-- Paginación para tareas pendientes -->
-                <nav>
-                    <ul class="pagination justify-content-center mt-3">
-                        {% if tareas_pendientes.has_previous %}
-                        <li class="page-item">
-                            <a class="page-link" href="?pendientes_page=1">Primero</a>
-                        </li>
-                        <li class="page-item">
-                            <a class="page-link" href="?pendientes_page={{ tareas_pendientes.previous_page_number }}">Anterior</a>
-                        </li>
-                        {% endif %}
-
-                        {% for num in tareas_pendientes.paginator.page_range %}
-                            {% if num <= 5 %}  {# Solo muestra las primeras 5 páginas #}
-                            <li class="page-item {% if tareas_pendientes.number == num %}active{% endif %}">
-                                <a class="page-link" href="?pendientes_page={{ num }}">{{ num }}</a>
-                            </li>
-                            {% endif %}
-                        {% endfor %}
-
-                        {% if tareas_pendientes.has_next %}
-                        <li class="page-item">
-                            <a class="page-link" href="?pendientes_page={{ tareas_pendientes.next_page_number }}">Siguiente</a>
-                        </li>
-                        <li class="page-item">
-                            <a class="page-link" href="?pendientes_page={{ tareas_pendientes.paginator.num_pages }}">Último</a>
-                        </li>
-                        {% endif %}
-                    </ul>
-                </nav>
-
-                <!-- Tareas Resueltas -->
-                <h3 class="mt-5">Tareas Resueltas</h3>
-                <ul class="list-group tareas-resueltas">
-                    {% for task in tareas_resueltas %}
-                    <li class="list-group-item priority-{{ task.priority }} task-item" data-task-id="{{ task.id }}">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <strong>{{ task.title }}</strong>
-                                <p>{{ task.nota }}</p>
-                                <p>Fecha de asignación: {{ task.fecha_asignacion }}</p> 
-                                <p>Fecha de vencimiento: {{ task.fecha_vencimiento }}</p>
-                                <p>Prioridad: {{ task.get_priority_display }}</p>
-                                {% if task.archivo %}
-                                <p>Archivo: 
-                                    <a href="{{ task.archivo.url }}" target="_blank" class="btn btn-info btn-sm mr-2">
-                                        <i class="fas fa-external-link-alt"></i> Abrir
-                                    </a>
-                                    <a href="{{ task.archivo.url }}" download class="btn btn-info btn-sm">
-                                        <i class="fas fa-download"></i> Descargar
-                                    </a>
-                                </p>
-                                {% endif %}
-                            </div>
-                            <!-- Botones de acciones (solo íconos) -->
-                            <div class="task-actions">
-                                <a href="{% url 'task_update' task.pk %}" class="btn btn-primary btn-sm">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-                                <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteTaskModal{{ task.id }}">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Modal de eliminación para tareas resueltas -->
-                        <div class="modal fade" id="deleteTaskModal{{ task.id }}" tabindex="-1" role="dialog" aria-labelledby="deleteTaskModalLabel{{ task.id }}" aria-hidden="true">
-                            <div class="modal-dialog modal-dialog-centered" role="document">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title text-danger" id="deleteTaskModalLabel{{ task.id }}">¿Estás seguro de que deseas eliminar la tarea {{ task.title }}?</h5>
-                                        <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
-                                            <span aria-hidden="true">&times;</span>
-                                        </button>
-                                    </div>
-                                    <div class="card-body text-center">
-                                        <p class="mb-4"><strong>{{ task.nota }}</strong></p>
-                                        <form method="post" action="{% url 'task_delete' task.pk %}" class="d-inline">
-                                            {% csrf_token %}
-                                            <button type="submit" class="btn btn-danger">
-                                                <i class="fas fa-trash"></i> Eliminar
-                                            </button>
-                                        </form>
-                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">
-                                            <i class="fas fa-times"></i> Cancelar
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </li>
-                    {% endfor %}
-                </ul>
-                <!-- Paginación para tareas resueltas -->
-                <nav>
-                    <ul class="pagination justify-content-center mt-3">
-                        {% if tareas_resueltas.has_previous %}
-                        <li class="page-item">
-                            <a class="page-link" href="?resueltas_page=1">Primero</a>
-                        </li>
-                        <li class="page-item">
-                            <a class="page-link" href="?resueltas_page={{ tareas_resueltas.previous_page_number }}">Anterior</a>
-                        </li>
-                        {% endif %}
-
-                        {% for num in tareas_resueltas.paginator.page_range %}
-                            {% if num <= 5 %}  {# Solo muestra las primeras 5 páginas #}
-                            <li class="page-item {% if tareas_resueltas.number == num %}active{% endif %}">
-                                <a class="page-link" href="?resueltas_page={{ num }}">{{ num }}</a>
-                            </li>
-                            {% endif %}
-                        {% endfor %}
-
-                        {% if tareas_resueltas.has_next %}
-                        <li class="page-item">
-                            <a class="page-link" href="?resueltas_page={{ tareas_resueltas.next_page_number }}">Siguiente</a>
-                        </li>
-                        <li class="page-item">
-                            <a class="page-link" href="?resueltas_page={{ tareas_resueltas.paginator.num_pages }}">Último</a>
-                        </li>
-                        {% endif %}
-                    </ul>
-                </nav>
-            </div>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+          <!-- Paginación para tareas resueltas -->
+          <nav>
+            <ul class="pagination justify-content-center mt-3">
+              {% if tareas_resueltas.has_previous %}
+              <li class="page-item">
+                <a class="page-link" href="?resueltas_page=1">Primero</a>
+              </li>
+              <li class="page-item">
+                <a
+                  class="page-link"
+                  href="?resueltas_page={{ tareas_resueltas.previous_page_number }}"
+                  >Anterior</a
+                >
+              </li>
+              {% endif %} {% for num in tareas_resueltas.paginator.page_range %}
+              {% if num <= 5 %} {# Solo muestra las primeras 5 páginas #}
+              <li
+                class="page-item {% if tareas_resueltas.number == num %}active{% endif %}"
+              >
+                <a class="page-link" href="?resueltas_page={{ num }}"
+                  >{{ num }}</a
+                >
+              </li>
+              {% endif %} {% endfor %} {% if tareas_resueltas.has_next %}
+              <li class="page-item">
+                <a
+                  class="page-link"
+                  href="?resueltas_page={{ tareas_resueltas.next_page_number }}"
+                  >Siguiente</a
+                >
+              </li>
+              <li class="page-item">
+                <a
+                  class="page-link"
+                  href="?resueltas_page={{ tareas_resueltas.paginator.num_pages }}"
+                  >Último</a
+                >
+              </li>
+              {% endif %}
+            </ul>
+          </nav>
         </div>
+      </div>
     </div>
-
     <!-- Scripts de JavaScript -->
     <script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
     <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
     <script src="{% static 'js/sb-admin-2.min.js' %}"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const resolveButtons = document.querySelectorAll('.btn-resolve');
-
-            resolveButtons.forEach(button => {
-                button.addEventListener('click', function (event) {
-                    event.preventDefault(); 
-
-                    const form = button.closest('form');
-                    const taskItem = button.closest('.task-item');
-                    const taskId = taskItem.dataset.taskId;
-
-                    fetch(form.action, {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRFToken': form.querySelector('[name=csrfmiddlewaretoken]').value,
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({}),
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.status === 'success') {
-                            const resolveButton = taskItem.querySelector('.btn-resolve');
-                            if (resolveButton) {
-                                resolveButton.remove();
-                            }
-
-                            const resolvedList = document.querySelector('.tareas-resueltas');
-                            taskItem.remove(); 
-                            resolvedList.appendChild(taskItem); 
-                        } else {
-                            alert(data.message); 
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                    });
-                });
-            });
-        });
-    </script>
-</body>
+    <script src="{% static 'js/task_list.js' %}"></script>
+  </body>
 </html>

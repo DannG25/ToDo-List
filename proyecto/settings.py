@@ -161,6 +161,6 @@ EMAIL_USE_TLS = False
 EMAIL_USE_SSL = False
 EMAIL_HOST_USER = ''
 EMAIL_HOST_PASSWORD = ''
-DEFAULT_FROM_EMAIL = "noreply@api-v1.0.com"
+DEFAULT_FROM_EMAIL = 'no-reply@tudominio.com'  # Cambia esto
 
 PASSWORD_RESET_TIMEOUT = 86400  # 1 día para que el enlace expire

@@ -13,10 +13,14 @@ urlpatterns = [
     path('update/<int:pk>/', views.task_update, name='task_update'),
     path('delete/<int:pk>/', views.task_delete, name='task_delete'),
     path('check_resolve/<int:pk>/', views.check_resolve, name='check_resolve'),
+    path('task/<int:pk>/file/', views.task_file_download,
+         name='task_file_download'),
 
     # URLs para la configuración y envío de correo
     path('configure_email/', views.configure_email, name='configure_email'),
     path('send_email/', views.send_email, name='send_email'),
+    path('configure-email/', views.configure_email, name='configure_email'),
+
 
     path('', RedirectView.as_view(url='login/')),
 
@@ -24,3 +28,5 @@ urlpatterns = [
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL,
                           document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.STATIC_URL,
+                          document_root=settings.STATIC_ROOT)

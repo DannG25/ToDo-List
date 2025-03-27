@@ -14,7 +14,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.forms import AuthenticationForm
 from django import forms
-from django.conf import settings
+# from django.conf import settings
 from .models import Task
 
 
@@ -29,33 +29,6 @@ class TaskForm(forms.ModelForm):
         widgets = {
             'fecha_vencimiento': forms.DateInput(attrs={'type': 'date'}),
         }
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # Mensaje de ayuda para el campo archivo
-        self.fields['archivo'].help_text = f'Tamaño máximo permitido: {settings.MAX_UPLOAD_SIZE/1024/1024}MB'
-
-    def clean_archivo(self):
-        archivo = self.cleaned_data.get('archivo')
-
-        # Validación solo si hay archivo (campo opcional)
-        if archivo:
-            # Validación de tamaño
-            if archivo.size > settings.MAX_UPLOAD_SIZE:
-                raise forms.ValidationError(
-                    f'El archivo es demasiado grande. Tamaño máximo permitido: {settings.MAX_UPLOAD_SIZE/1024/1024}MB'
-                )
-
-            # Validación de tipo de archivo (opcional)
-            valid_extensions = ['.pdf', '.doc', '.docx',
-                                '.jpg', '.png', '.xls', '.xlsx']
-            if not any(archivo.name.lower().endswith(ext) for ext in valid_extensions):
-                raise forms.ValidationError(
-                    'Tipo de archivo no permitido. Formatos aceptados: PDF, DOC, DOCX, JPG, PNG, XLS, XLSX'
-                )
-
-        return archivo
-
 
 class EmailConfigForm(forms.Form):
     """

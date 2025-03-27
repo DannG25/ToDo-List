@@ -1,74 +1,85 @@
 {% load static widget_tweaks %}
 <!DOCTYPE html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Formulario de Tarea</title>
-    <link rel="stylesheet" href="{% static 'css/sb-admin-2.min.css' %}">
-    <link rel="stylesheet" href="{% static 'vendor/fontawesome-free/css/all.min.css' %}">
-</head>
-<body>
+    <link rel="stylesheet" href="{% static 'css/sb-admin-2.min.css' %}" />
+    <link
+      rel="stylesheet"
+      href="{% static 'vendor/fontawesome-free/css/all.min.css' %}"
+    />
+  </head>
+  <body>
     <div class="container">
-        <div class="card shadow mb-4">
-            <div class="card-header py-3">
-                <h2 class="m-0 font-weight-bold text-primary">Formulario de Tarea</h2>
-            </div>
-            <div class="card-body">
-                <!-- Botón de Volver arriba del formulario -->
-                <div class="d-flex justify-content-end mb-3">
-                    <a href="{% url 'task_list' %}" class="btn btn-secondary" onclick="confirmExit()">
-                        <i class="fas fa-arrow-left"></i> Volver
-                    </a>
-                </div>
-
-                <form method="post" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    <!-- Campo: Título -->
-                    <div class="form-group">
-                        <label for="{{ form.title.id_for_label }}">Título</label>
-                        {{ form.title|add_class:"form-control" }}
-                    </div>
-                    <!-- Campo: Nota -->
-                    <div class="form-group">
-                        <label for="{{ form.nota.id_for_label }}">Nota</label>
-                        {{ form.nota|add_class:"form-control" }}
-                    </div>
-                    <!-- Campo: Fecha de vencimiento -->
-                    <div class="form-group">
-                        <label for="{{ form.fecha_vencimiento.id_for_label }}">Fecha de vencimiento</label>
-                        {{ form.fecha_vencimiento|add_class:"form-control" }}
-                    </div>
-                     <!-- Campo: Prioridad -->
-                     <div class="form-group">
-                        <label for="{{ form.priority.id_for_label }}">Prioridad</label>
-                        {{ form.priority|add_class:"form-control" }}
-                    </div>
-                    <!-- Campo: Archivo -->
-                    <div class="form-group">
-                        <label for="{{ form.archivo.id_for_label }}">Archivo</label>
-                        {{ form.archivo|add_class:"form-control-file" }}
-                    </div>
-                    <!-- Botón de Guardar centrado -->
-                    <div class="text-center">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save"></i> Guardar
-                        </button>
-                    </div>
-                </form>
-            </div>
+      <div class="card shadow mb-4">
+        <div class="card-header py-3">
+          <h2 class="m-0 font-weight-bold text-primary">Formulario de Tarea</h2>
         </div>
+        <div class="card-body">
+          <!-- Botón de Volver arriba del formulario -->
+          <div class="d-flex justify-content-end mb-3">
+            <a
+              href="{% url 'task_list' %}"
+              class="btn btn-secondary"
+              onclick="confirmExit()"
+            >
+              <i class="fas fa-arrow-left"></i> Volver
+            </a>
+          </div>
+
+          <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <!-- Campo: Título -->
+            <div class="form-group">
+              <label for="{{ form.title.id_for_label }}">Título</label>
+              {{ form.title|add_class:"form-control" }}
+            </div>
+            <!-- Campo: Nota -->
+            <div class="form-group">
+              <label for="{{ form.nota.id_for_label }}">Nota</label>
+              {{ form.nota|add_class:"form-control" }}
+            </div>
+            <!-- Campo: Fecha de vencimiento -->
+            <div class="form-group">
+              <label for="{{ form.fecha_vencimiento.id_for_label }}"
+                >Fecha de vencimiento</label
+              >
+              {{ form.fecha_vencimiento|add_class:"form-control" }}
+            </div>
+            <!-- Campo: Prioridad -->
+            <div class="form-group">
+              <label for="{{ form.priority.id_for_label }}">Prioridad</label>
+              {{ form.priority|add_class:"form-control" }}
+            </div>
+            <!-- Campo: Archivo -->
+            <div class="form-group">
+              <label for="{{ form.archivo.id_for_label }}">Archivo</label>
+              {{ form.archivo|add_class:"form-control-file" }}
+            </div>
+            <!-- Botón de Guardar centrado -->
+            <div class="text-center">
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Guardar
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
 
     <script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
     <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
     <script src="{% static 'js/sb-admin-2.min.js' %}"></script>
     <script>
-        function confirmExit() {
-            if (confirm('¿Estás seguro de que deseas salir sin guardar los cambios?')) {
-                window.location.href = "{% url 'task_list' %}";
-            }
+      function confirmExit() {
+        if (
+          confirm("¿Estás seguro de que deseas salir sin guardar los cambios?")
+        ) {
+          window.location.href = "{% url 'task_list' %}";
         }
+      }
     </script>
-</body>
+  </body>
 </html>

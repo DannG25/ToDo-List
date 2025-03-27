@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h2>Enviar Correo de Prueba</h2>
+        </div>
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data" id="emailForm">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="email">Correo Destinatario:</label>
+                    <input type="email" class="form-control" id="email" name="email" 
+                           value="usuario@ejemplo.com" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="subject">Asunto:</label>
+                    <input type="text" class="form-control" id="subject" name="subject" 
+                           value="Prueba de MailHog" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="message">Mensaje:</label>
+                    <textarea class="form-control" id="message" name="message" rows="5" required>Mensaje de prueba</textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="attachment">Archivo Adjunto (opcional):</label>
+                    <input type="file" class="form-control-file" id="attachment" name="attachment">
+                </div>
+                
+                <div class="text-center mt-4">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-paper-plane"></i> Enviar Correo
+                    </button>
+                    <a href="{{ mailhog_url }}" target="_blank" class="btn btn-info btn-lg ml-2">
+                        <i class="fas fa-inbox"></i> Ver MailHog
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    {% if messages %}
+    <div class="mt-3">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+
+<script>
+// Manejo AJAX del formulario
+document.getElementById('emailForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    
+    fetch(this.action, {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        const alertType = data.status === 'success' ? 'success' : 'danger';
+        showAlert(data.message, alertType);
+        
+        if(data.status === 'success') {
+            this.reset();
+        }
+    })
+    .catch(error => {
+        showAlert('Error en la conexión', 'danger');
+    });
+});
+
+function showAlert(message, type) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} mt-3`;
+    alertDiv.textContent = message;
+    
+    const container = document.querySelector('.container');
+    container.insertBefore(alertDiv, container.firstChild);
+    
+    setTimeout(() => alertDiv.remove(), 5000);
+}
+</script>
+{% endblock %}
